@@ -1,4 +1,10 @@
-# vcf2curator
+<h1 align="center">vcf2curator</h1>
+
+<p align="center">
+  <a href="https://github.com/ClinSeq/vcf2curator/actions/workflows/tests.yml">
+    <img src="https://github.com/ClinSeq/vcf2curator/actions/workflows/tests.yml/badge.svg" alt="Tests">
+  </a>
+</p>
 
 A Python CLI that transforms raw bioinformatics pipeline output into clean,
 schema-validated tables ready for ingestion into the **Curator** web app.
