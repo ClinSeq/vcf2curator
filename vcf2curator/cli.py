@@ -8,6 +8,7 @@ import typer
 
 from vcf2curator import __version__
 from vcf2curator.commands.snvs import snvs
+from vcf2curator.commands.svs import svs
 from vcf2curator.commands.validate import validate
 
 app = typer.Typer(
@@ -18,6 +19,7 @@ app = typer.Typer(
 
 app.command()(validate)
 app.command()(snvs)
+app.command()(svs)
 
 
 def version_callback(value: bool) -> None:

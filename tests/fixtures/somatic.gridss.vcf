@@ -1,0 +1,28 @@
+##fileformat=VCFv4.2
+##source=synthetic GRIDSS-like test data
+##FILTER=<ID=LOW_QUAL,Description="Low quality">
+##INFO=<ID=EVENT,Number=1,Type=String,Description="Event ID">
+##INFO=<ID=MATEID,Number=.,Type=String,Description="Mate breakend ID">
+##INFO=<ID=VF,Number=1,Type=Integer,Description="Supporting fragments">
+##INFO=<ID=TAF,Number=.,Type=Float,Description="Tumour allele fraction">
+##INFO=<ID=BPNAMES,Number=.,Type=String,Description="Supporting read names">
+##FORMAT=<ID=VF,Number=1,Type=Integer,Description="Supporting fragments">
+##contig=<ID=1,length=20000>
+##contig=<ID=7,length=10000>
+##contig=<ID=hs37d5,length=1000>
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	P-0001-N-01	P-0001-T-01
+1	1000	del_o	A	A[1:2000[	500	PASS	EVENT=del;MATEID=del_h;VF=30;TAF=0.25;BPNAMES=del_r1,del_r2,del_r3,del_r4	VF	0	30
+1	2000	del_h	C	]1:1000]C	500	PASS	EVENT=del;MATEID=del_o;VF=30;TAF=0.25;BPNAMES=del_r1,del_r2,del_r3,del_r4	VF	0	30
+1	3000	dup_o	A	]1:4000]A	500	PASS	EVENT=dup;MATEID=dup_h;VF=12;TAF=0.1;BPNAMES=dup_r1,dup_r2,dup_r3,dup_r4	VF	0	12
+1	4000	dup_h	C	C[1:3000[	500	PASS	EVENT=dup;MATEID=dup_o;VF=12;TAF=0.1;BPNAMES=dup_r1,dup_r2,dup_r3,dup_r4	VF	0	12
+1	5000	inv_o	A	A]1:6000]	500	PASS	EVENT=inv;MATEID=inv_h;VF=20;TAF=0.2;BPNAMES=inv_r1,inv_r2,inv_r3,inv_r4	VF	0	20
+1	6000	inv_h	C	C]1:5000]	500	PASS	EVENT=inv;MATEID=inv_o;VF=20;TAF=0.2;BPNAMES=inv_r1,inv_r2,inv_r3,inv_r4	VF	0	20
+1	7000	ins_o	A	AGGGGGGGGGGGGGGGGGGGG[1:7001[	500	PASS	EVENT=ins;MATEID=ins_h;VF=15;TAF=0.3;BPNAMES=ins_r1,ins_r2,ins_r3,ins_r4	VF	0	15
+1	7001	ins_h	C	]1:7000]GGGGGGGGGGGGGGGGGGGGC	500	PASS	EVENT=ins;MATEID=ins_o;VF=15;TAF=0.3;BPNAMES=ins_r1,ins_r2,ins_r3,ins_r4	VF	0	15
+1	8000	tra_o	A	A[7:500[	500	PASS	EVENT=tra;MATEID=tra_h;VF=25;TAF=0.4;BPNAMES=tra_r1,tra_r2,tra_r3,tra_r4	VF	0	25
+1	9000	sgl	A	A.	500	PASS	EVENT=sgl;VF=40;TAF=0.5;BPNAMES=sgl_r1,sgl_r2,sgl_r3,sgl_r4	VF	0	40
+1	10000	lq_o	A	A[1:10500[	500	LOW_QUAL	EVENT=lq;MATEID=lq_h;VF=3;TAF=0.01;BPNAMES=lq_r1,lq_r2,lq_r3,lq_r4	VF	0	3
+1	10500	lq_h	C	]1:10000]C	500	LOW_QUAL	EVENT=lq;MATEID=lq_o;VF=3;TAF=0.01;BPNAMES=lq_r1,lq_r2,lq_r3,lq_r4	VF	0	3
+1	11000	dec_o	A	A[hs37d5:100[	500	PASS	EVENT=dec;MATEID=dec_h;VF=9;TAF=0.1;BPNAMES=dec_r1,dec_r2,dec_r3,dec_r4	VF	0	9
+7	500	tra_h	C	]1:8000]C	500	PASS	EVENT=tra;MATEID=tra_o;VF=25;TAF=0.4;BPNAMES=tra_r1,tra_r2,tra_r3,tra_r4	VF	0	25
+hs37d5	100	dec_h	C	]1:11000]C	500	PASS	EVENT=dec;MATEID=dec_o;VF=9;TAF=0.1;BPNAMES=dec_r1,dec_r2,dec_r3,dec_r4	VF	0	9

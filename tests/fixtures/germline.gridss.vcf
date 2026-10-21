@@ -1,0 +1,17 @@
+##fileformat=VCFv4.2
+##source=synthetic GRIDSS-like test data
+##INFO=<ID=EVENT,Number=1,Type=String,Description="Event ID">
+##INFO=<ID=MATEID,Number=.,Type=String,Description="Mate breakend ID">
+##INFO=<ID=VF,Number=1,Type=Integer,Description="Supporting fragments">
+##INFO=<ID=BPNAMES,Number=.,Type=String,Description="Supporting read names">
+##FORMAT=<ID=AF,Number=1,Type=Float,Description="Allele fraction">
+##contig=<ID=1,length=20000>
+##contig=<ID=7,length=10000>
+##contig=<ID=chr17,length=10000>
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	P-0001-N-01
+1	1000	g1_o	A	A[1:2000[	500	PASS	EVENT=g1;MATEID=g1_h;VF=50;BPNAMES=g1_r1,g1_r2,g1_r3,g1_r4	AF	0.5
+1	2000	g1_h	C	]1:1000]C	500	PASS	EVENT=g1;MATEID=g1_o;VF=50;BPNAMES=g1_r1,g1_r2,g1_r3,g1_r4	AF	0.5
+7	450	g2_o	A	A[7:700[	500	PASS	EVENT=g2;MATEID=g2_h;VF=10;BPNAMES=g2_r1,g2_r2,g2_r3,g2_r4	AF	0.12
+7	700	g2_h	C	]7:450]C	500	PASS	EVENT=g2;MATEID=g2_o;VF=10;BPNAMES=g2_r1,g2_r2,g2_r3,g2_r4	AF	0.12
+chr17	100	g3_o	A	A[chr17:300[	500	PASS	EVENT=g3;MATEID=g3_h;VF=60;BPNAMES=g3_r1,g3_r2,g3_r3,g3_r4	AF	0.45
+chr17	300	g3_h	C	]chr17:100]C	500	PASS	EVENT=g3;MATEID=g3_o;VF=60;BPNAMES=g3_r1,g3_r2,g3_r3,g3_r4	AF	0.45
