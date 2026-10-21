@@ -14,7 +14,7 @@ A Python CLI utility that transforms raw bioinformatics pipeline results (VCFs) 
 - uv sync to install/update the environment from uv.lock.
 - uv lock after manually editing pyproject.toml dependency constraints.
 - Commit both pyproject.toml and uv.lock to version control.
-- Pin the Python version in .python-version and requires-python in pyproject.toml.
+- Pin the supported Python version via requires-python in pyproject.toml.
 - Use uv tool install . (or uv pip install -e .) to install the CLI itself as an executable entry point during development.
 
 ### Don't:
@@ -34,7 +34,6 @@ The package lives at the repo root (not under src/); pyproject.toml sets
 vcf2curator/              # repo root
 ├── pyproject.toml
 ├── uv.lock
-├── .python-version
 ├── README.md
 ├── CLAUDE.md
 ├── .gitignore
