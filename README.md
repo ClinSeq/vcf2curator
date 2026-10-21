@@ -1,4 +1,10 @@
-# vcf2curator
+<h1 align="center">vcf2curator</h1>
+
+<p align="center">
+  <a href="https://github.com/ClinSeq/vcf2curator/actions/workflows/tests.yml">
+    <img src="https://github.com/ClinSeq/vcf2curator/actions/workflows/tests.yml/badge.svg" alt="Tests">
+  </a>
+</p>
 
 A Python CLI that transforms raw bioinformatics pipeline output into clean,
 schema-validated tables ready for ingestion into the **Curator** web app.
@@ -78,6 +84,27 @@ vcf2curator snvs \
 vcf2curator snvs -i sample.germline.vep.vcf -o out.tsv \
     --vcftype germline --oncokb allAnnotatedVariants.txt --wgs
 
+# Convert a GRIDSS SV VCF into a Curator table (panel data), with an evidence BAM
+vcf2curator svs \
+    --input  sample.gridss.vcf \
+    --output sample.sv.curator.tsv \
+    --vcftype somatic \
+    --sdid P-0001-T-01 --project PROJ \
+    --genes genes.bed --exons exons.bed --cgc cancer_gene_census.tsv \
+    --targets capture_targets.bed \
+    --curation-ann curation.csv \
+    --bam tumor.bam --evidence-bam sample.sv.evidence.bam
+
+# Combine one case's QC metrics (tumor + normal, panel) into a QC table
+vcf2curator qc -o P-0001.qc.txt \
+    --tumor-name  P-0001-T-01 \
+    --tumor-hsmetrics  T.picard-hsmetrics.txt --tumor-markdup  T.picard-markdup.metrics.txt \
+    --tumor-insertsize T.picard-insertsize.txt --tumor-contest T.contest.txt \
+    --tumor-msings     T.MSI_Analysis.txt \
+    --normal-name P-0001-N-01 \
+    --normal-hsmetrics  N.picard-hsmetrics.txt --normal-markdup N.picard-markdup.metrics.txt \
+    --normal-insertsize N.picard-insertsize.txt --normal-contest N.contest.txt
+
 # Check a VCF is VEP-annotated with the required CSQ fields, without writing output
 vcf2curator validate --input sample.vep.vcf
 
@@ -106,6 +133,52 @@ behaviour:
 | `--wgs` | off | apply whole-genome filters |
 | `--wgs-min-alt` | `5` | min tumor ALT reads (somatic WGS) |
 
+### `svs` — GRIDSS structural variant VCF → Curator table
+
+Reads a GRIDSS VCF and writes one row per event; a translocation (TRA) gets one
+row per breakend. Only PASS records are used. Single breakends and events
+touching a contig outside 1–22/X/Y (with or without `chr`) are skipped.
+
+- **SV type** (DEL/DUP/INS/INV/TRA) is derived from each record's breakend ALT,
+  using the same rules as StructuralVariantAnnotation's `simpleEventType`, so no
+  R step is needed.
+- **Annotations:** `--genes` (BED with gene symbol in column 4) gives
+  GENE_A/GENE_B, `--cgc` gives CGC_ANN, `--curation-ann` gives CURATE (matched
+  on `--project` and `--vcftype`). `--exons` is a BED file.
+- **CURATOR:** with `--targets` (panel BED), an event is YES when a breakend is
+  within `--target-padding` bp of a target; with `--wgs`, when either gene is in
+  CGC. Germline events below `--germline-min-support` reads, and non-TRA events
+  that overlap no exon, are set to NO. Give exactly one of `--targets`/`--wgs`.
+- **`--bam`** (optional) drops events whose supporting reads (INFO/BPNAMES) all
+  start at the same place (SAME_START_READS). Add `--evidence-bam` to also write
+  those reads to a sorted, indexed BAM for IGV review.
+
+| Flag | Default | Effect |
+|---|---|---|
+| `--target-padding` | `150` | bp around a target that still counts as on target |
+| `--germline-min-support` | `40` | germline: min supporting reads for CURATOR=YES |
+| `--same-start-fraction` | `0.6` | SAME_START_READS: max share of reads at one position |
+| `--min-distinct-reads` | `3` | SAME_START_READS: min distinct read positions |
+
+### `qc` — QC metric files → QC overview table
+
+Combines one case's QC files into a tab-separated table: a header, the tumor
+row and, if given, the normal row. Each sample gets its own `--tumor-*` /
+`--normal-*` options. Sample names come only from `--tumor-name` /
+`--normal-name`, never from file names. Normal options are all-or-nothing;
+leave them out for tumor-only cases.
+
+| Design | Metrics option | Also required | Optional | Output columns |
+|---|---|---|---|---|
+| Panel | `--*-hsmetrics` | `--*-markdup`, `--*-insertsize`, `--*-contest` | `--*-msings` | SAMP, MEAN_TARGET_COVERAGE, FOLD_ENRICHMENT, dedupped_on_bait_rate, FOLD_80_BASE_PENALTY, READ_PAIRS_EXAMINED, PERCENT_DUPLICATION, contamination_%, MEDIAN_INSERT_SIZE, msing_score |
+| WGS | `--*-wgsmetrics` | `--*-insertsize`, `--*-contest` | — | SAMP, MEAN_COVERAGE, FOLD_80_BASE_PENALTY, contamination_%, MEDIAN_INSERT_SIZE |
+
+The design follows the metrics option given, and tumor and normal must use the
+same one. Values are copied as written in the input files;
+`dedupped_on_bait_rate` is `ON_BAIT_BASES / PF_BASES_ALIGNED`. Missing or
+uncomputed values (Picard `?`, no mSINGS file) are written as `NA`. Only the
+first data row of each Picard file is used.
+
 ## Development
 
 Run these before committing:
@@ -122,9 +195,10 @@ uv run pytest
 ```
 vcf2curator/
 ├── cli.py               # builds the Typer app, registers commands
-├── commands/            # one module per subcommand (snvs.py, validate.py, _shared.py)
+├── commands/            # one module per subcommand (snvs.py, svs.py, qc.py, validate.py, _shared.py)
+├── utils/               # shared helpers (gridss.py, evidence.py, picard.py)
 ├── curator/             # schema.py + shared, schema-validated writer.py
-├── annotations/         # OncoKB / CGC / hotspot / curation loaders
+├── annotations/         # OncoKB / CGC / hotspot / curation loaders, BED intervals
 ├── logging_config.py
 └── exceptions.py
 tests/                   # pytest suite + small synthetic fixtures/
