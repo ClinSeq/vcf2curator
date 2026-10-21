@@ -1,0 +1,6 @@
+Position	tumor
+unstable_loci	3
+passing_loci	60
+msing_score	0.0500
+msi status	NEG
+1:1000-1100	1.2

@@ -1,0 +1,14 @@
+## htsjdk.samtools.metrics.StringHeader
+# MarkDuplicates INPUT=sample.bam OUTPUT=metrics.txt
+## htsjdk.samtools.metrics.StringHeader
+# Started on: Mon Jan 01 00:00:00 CET 2024
+
+## METRICS CLASS	picard.sam.DuplicationMetrics
+LIBRARY	UNPAIRED_READS_EXAMINED	READ_PAIRS_EXAMINED	PERCENT_DUPLICATION	ESTIMATED_LIBRARY_SIZE
+lib1	1200	45000000	0.4123	60000000
+lib2	800	1000	0.9	1000
+
+
+## HISTOGRAM	java.lang.Integer
+BIN	CoverageMult
+1.0	1.01
