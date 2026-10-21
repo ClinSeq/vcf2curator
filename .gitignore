@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.scripts/
+.python-version
+
+# Virtual environment (managed by uv)
+.venv/
+
+# Tooling caches
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Local data & outputs
+*.curator.tsv
+*.out.tsv
+/tmp/
+
+# OS / editor
+.DS_Store
+*.swp

@@ -1,2 +1,137 @@
 # vcf2curator
-A Python CLI utility that transforms raw bioinformatics pipeline results (VCFs) into clean, structured tables, ready for immediate ingestion into the Curator web app.
+
+A Python CLI that transforms raw bioinformatics pipeline output into clean,
+schema-validated tables ready for ingestion into the **Curator** web app.
+
+It consolidates a set of standalone scripts into one tool with a consistent
+interface: a small set of plain subcommands with explicit arguments, a shared
+Curator output writer, and consistent logging and error handling.
+
+## Requirements
+
+This project uses [`uv`](https://docs.astral.sh/uv/) exclusively for environment
+and dependency management (no `pip`/`conda`/`poetry`). Python `>=3.11`.
+
+```bash
+# Install uv (once)
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+## Install
+
+### As a standalone CLI (recommended)
+
+Install `vcf2curator` as a real executable on your `PATH`, so it runs like any
+other command — no `uv run` prefix:
+
+```bash
+# From the project root
+uv tool install .
+
+# ...or install editable, so local source edits are picked up without reinstalling
+uv tool install --editable .
+```
+
+This places the executable at `~/.local/bin/vcf2curator`. Make sure
+`~/.local/bin` is on your `PATH` (the uv installer adds it to your shell profile;
+open a new shell or `source ~/.profile` if the command isn't found yet):
+
+```bash
+vcf2curator --help
+```
+
+Update or remove the installed tool later with:
+
+```bash
+uv tool install --editable . --reinstall   # refresh after pyproject/deps change
+uv tool uninstall vcf2curator              # remove
+```
+
+### Run from the project environment (no install)
+
+For a reproducible run pinned to `uv.lock` (e.g. in CI), skip the install and use
+`uv run`, which executes inside the project's managed environment:
+
+```bash
+uv sync                        # create/sync .venv from uv.lock
+uv run vcf2curator --help
+```
+
+## Usage
+
+Examples below use the standalone `vcf2curator` command; prefix any of them with
+`uv run` to run from the project environment instead.
+
+```bash
+# Convert a VEP-annotated somatic VCF into a Curator table
+vcf2curator snvs \
+    --input  sample.somatic.vep.vcf \
+    --output sample.curator.tsv \
+    --vcftype somatic \
+    --oncokb  allAnnotatedVariants.txt \
+    --cgc     cancer_gene_census.tsv \
+    --hotspot-snv   hotspots_snv.csv \
+    --hotspot-indel hotspots_indel.csv \
+    --curation-ann  curation.csv
+
+# Germline call set, whole-genome filters
+vcf2curator snvs -i sample.germline.vep.vcf -o out.tsv \
+    --vcftype germline --oncokb allAnnotatedVariants.txt --wgs
+
+# Check a VCF is VEP-annotated with the required CSQ fields, without writing output
+vcf2curator validate --input sample.vep.vcf
+
+# See what would be written without touching disk
+vcf2curator snvs ... --dry-run
+```
+
+Global flags: `--verbose/-v`, `--quiet/-q`. Distinct exit codes are used for
+failure modes (input validation `3`, missing annotation resource `4`, schema
+error `5`).
+
+### `snvs` — SNV/indel VCF → Curator table
+
+Reads a VEP-annotated somatic or germline VCF and emits the Curator table.
+Annotation resources are supplied as arguments (`--oncokb`, `--cgc`,
+`--hotspot-snv`, `--hotspot-indel`, `--curation-ann`); only `--oncokb` is
+required. Filtering thresholds are configurable and default to the legacy
+behaviour:
+
+| Flag | Default | Effect |
+|---|---|---|
+| `--impact` (repeatable) | `HIGH`, `MODERATE` | IMPACT values treated as actionable |
+| `--keep-filter` (repeatable) | somatic `PASS`,`LowQual` / germline `PASS` | FILTER values kept |
+| `--include-splice / --no-include-splice` | on | keep splice-region variants |
+| `--include-hotspot / --no-include-hotspot` | on | keep hotspot variants (somatic) |
+| `--wgs` | off | apply whole-genome filters |
+| `--wgs-min-alt` | `5` | min tumor ALT reads (somatic WGS) |
+
+## Development
+
+Run these before committing:
+
+```bash
+uv run ruff check .
+uv run ruff format --check .
+uv run mypy
+uv run pytest
+```
+
+## Project layout
+
+```
+vcf2curator/
+├── cli.py               # builds the Typer app, registers commands
+├── commands/            # one module per subcommand (snvs.py, validate.py, _shared.py)
+├── curator/             # schema.py + shared, schema-validated writer.py
+├── annotations/         # OncoKB / CGC / hotspot / curation loaders
+├── logging_config.py
+└── exceptions.py
+tests/                   # pytest suite + small synthetic fixtures/
+```
+
+Adding a new command = add `commands/<name>.py` holding the Typer function and
+its logic (using the shared `CuratorWriter` for output and `commands/_shared.py`
+for `--verbose/--quiet` and exit codes), then register it in `cli.py` with
+`app.command()(<name>)`.
+

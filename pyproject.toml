@@ -1,0 +1,63 @@
+[project]
+name = "vcf2curator"
+version = "0.1.0"
+description = "Transform raw bioinformatics pipeline output into Curator-ready tables"
+readme = "README.md"
+authors = [
+    { name = "imsarath", email = "sarath.murugan@outlook.com" }
+]
+requires-python = ">=3.11"
+dependencies = [
+    "pandas>=3.0.5",
+    "pysam>=0.24.0",
+    "typer>=0.27.0",
+]
+
+[project.scripts]
+vcf2curator = "vcf2curator.cli:main"
+
+[build-system]
+requires = ["uv_build>=0.12.0,<0.13.0"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+# Package lives at the repo root (./vcf2curator), not under src/.
+module-root = ""
+
+[dependency-groups]
+dev = [
+    "mypy>=2.3.0",
+    "pandas-stubs>=3.0.5.260730",
+    "pytest>=9.1.1",
+    "ruff>=0.16.1",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+src = [".", "tests"]
+# Legacy reference scripts are kept for provenance but not linted/ported wholesale.
+extend-exclude = [".scripts"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "W", "N", "D"]
+ignore = ["D107", "D203", "D213"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["D"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+files = ["vcf2curator", "tests"]
+
+[[tool.mypy.overrides]]
+module = ["pysam.*"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"

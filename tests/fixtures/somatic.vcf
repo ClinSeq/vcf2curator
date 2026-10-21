@@ -1,0 +1,11 @@
+##fileformat=VCFv4.2
+##INFO=<ID=CSQ,Number=.,Type=String,Description="Consequence annotations from Ensembl VEP. Format: Allele|Consequence|IMPACT|SYMBOL|Gene|Feature|HGVSc|HGVSp|Amino_acids|Protein_position|CANONICAL|CLIN_SIG|Existing_variation|gnomADe_AF|gnomADg_AF|BrcaEx_ClinicalSignificance">
+##INFO=<ID=NUM_TOOLS,Number=1,Type=Integer,Description="Number of callers supporting the variant">
+##FILTER=<ID=LowQual,Description="Low quality">
+##FORMAT=<ID=DP,Number=1,Type=Integer,Description="Read depth">
+##FORMAT=<ID=AD,Number=R,Type=Integer,Description="Allelic depths for ref and alt">
+##FORMAT=<ID=AF,Number=A,Type=Float,Description="Allele frequency">
+##contig=<ID=7>
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	P-0001-N-01	P-0001-T-01
+7	140453136	rs113488022	A	T	.	PASS	NUM_TOOLS=2;CSQ=T|missense_variant|MODERATE|BRAF|ENSG00000157764|ENST00000288602|c.1799T>A|p.Val600Glu|V/E|600/766|YES|.|rs113488022|0.0001|0.0002|.	DP:AD:AF	60:58,2:0.03	120:80,40:0.33
+7	140453137	.	C	G	.	PASS	NUM_TOOLS=1;CSQ=G|synonymous_variant|LOW|BRAF|ENSG00000157764|ENST00000288602|c.1800C>G|p.=|./.|600/766|YES|.|.|0.1|0.2|.	DP:AD:AF	50:50,0:0.0	100:90,10:0.1

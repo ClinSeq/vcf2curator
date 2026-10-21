@@ -1,0 +1,6 @@
+##fileformat=VCFv4.2
+##INFO=<ID=DP,Number=1,Type=Integer,Description="Depth">
+##FORMAT=<ID=DP,Number=1,Type=Integer,Description="Read depth">
+##contig=<ID=7>
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	P-0001-N-01	P-0001-T-01
+7	140453136	.	A	T	.	PASS	DP=100	DP	60	120
