@@ -44,9 +44,7 @@ vcf2curator/              # repo root
     └── ...
 ```
 
-Keep the CLI simple: plain subcommands with explicit arguments, one module per
-command under vcf2curator/commands/, registered in cli.py. No plugin/format
-registry or `list-formats` style indirection.
+Keep the CLI simple: plain subcommands with explicit arguments, one module per command under vcf2curator/commands/, registered in cli.py. 
 
 ## Code style & static analysis
 - Formatting & linting: ruff, added as a dev dependency (uv add --dev ruff). Run uv run ruff format . and uv run ruff check . before committing. Fix lint issues rather than suppressing them; use # noqa sparingly and with a reason comment.
