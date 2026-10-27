@@ -7,6 +7,8 @@ from typing import Annotated
 import typer
 
 from vcf2curator import __version__
+from vcf2curator.commands.igv_relocate import igv_relocate
+from vcf2curator.commands.igv_session import igv_session
 from vcf2curator.commands.snvs import snvs
 from vcf2curator.commands.svs import svs
 from vcf2curator.commands.validate import validate
@@ -20,6 +22,8 @@ app = typer.Typer(
 app.command()(validate)
 app.command()(snvs)
 app.command()(svs)
+app.command(name="igv-session")(igv_session)
+app.command(name="igv-relocate")(igv_relocate)
 
 
 def version_callback(value: bool) -> None:

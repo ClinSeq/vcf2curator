@@ -95,6 +95,19 @@ vcf2curator svs \
     --curation-ann curation.csv \
     --bam tumor.bam --evidence-bam sample.sv.evidence.bam
 
+# IGV session files (SNV + SV) for one sample
+vcf2curator igv-session \
+    --outdir results/P-0001/igv \
+    --reference-dir /nfs/PROBIO/for_igv --genome hg19 \
+    --tumor-bam tumor.bam --normal-bam normal.bam \
+    --tumor-evidence-bam tumor.evidence.bam \
+    --tumor-segments tumor_segments.bedGraph --tumor-bins tumor_bins.bedGraph \
+    --somatic-vcf somatic.vep.vcf --targets capture_targets.bed
+
+# Rewrite paths in existing sessions after moving results to another server
+vcf2curator igv-relocate results/P-0001/igv/*.xml \
+    --replace /old/server/results=/new/server/results
+
 # Check a VCF is VEP-annotated with the required CSQ fields, without writing output
 vcf2curator validate --input sample.vep.vcf
 
@@ -150,6 +163,38 @@ touching a contig outside 1–22/X/Y (with or without `chr`) are skipped.
 | `--same-start-fraction` | `0.6` | SAME_START_READS: max share of reads at one position |
 | `--min-distinct-reads` | `3` | SAME_START_READS: min distinct read positions |
 
+### `igv-session` — input files → IGV session XML
+
+Writes `igv_session_snps.xml` and `igv_session_sv.xml` into `--outdir` (created
+if missing). Every input is optional, but at least one is required.
+
+| Track | SNV session | SV session |
+|---|---|---|
+| `--tumor-bam`, `--normal-bam` | yes | yes |
+| `--tumor-evidence-bam`, `--normal-evidence-bam` (GRIDSS) | no | yes |
+| `--tumor-/--normal-segments`, `--tumor-/--normal-bins`, `--germline-afs` (bedGraph) | yes | yes |
+| `--somatic-vcf`, `--germline-vcf` | yes | no |
+| `--targets` (capture BED) | yes | yes |
+
+- Missing files fail (exit 2). Empty files are skipped with a warning.
+- A warning is logged for a BAM without a `.bai` index next to it.
+- `--genome` (default `hg19`) and `--reference-dir` (reference tracks: blacklist,
+  mappability, simple repeats, AR exons) fill the bundled templates in
+  `vcf2curator/resources/igv/`. Override with `--snv-template`/`--sv-template`;
+  custom templates use the same `{placeholders}`.
+- BAM tracks are coloured by SV type when the file name matches
+  `-(N|CFDNA|T)-...(DEL|DUP|INV|TRA).bam`; grey otherwise.
+
+**Moving results between servers**
+
+- `--path-style relative` writes input paths relative to `--outdir`. IGV resolves
+  them against the session file's location, so sessions keep working when the
+  results tree is moved as a whole. Reference tracks stay absolute.
+- `igv-relocate SESSION.xml... --replace OLD=NEW` (repeatable) rewrites path
+  prefixes in `Resource/@path` and `Track/@id` of existing sessions, in place.
+  A prefix matches a whole path or a leading directory; the first match wins.
+  Use `--dry-run` to see how many paths would change.
+
 ## Development
 
 Run these before committing:
@@ -166,9 +211,10 @@ uv run pytest
 ```
 vcf2curator/
 ├── cli.py               # builds the Typer app, registers commands
-├── commands/            # one module per subcommand (snvs.py, svs.py, validate.py, _shared.py)
+├── commands/            # one module per subcommand (snvs.py, svs.py, igv_session.py, ...)
 ├── utils/               # shared helpers (gridss.py, evidence.py)
 ├── curator/             # schema.py + shared, schema-validated writer.py
+├── resources/igv/       # bundled IGV session templates
 ├── annotations/         # OncoKB / CGC / hotspot / curation loaders, BED intervals
 ├── logging_config.py
 └── exceptions.py

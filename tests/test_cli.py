@@ -150,3 +150,66 @@ def test_svs_bad_option_combinations(fixtures_dir: Path, tmp_path: Path, extra: 
     result = runner.invoke(app, _svs_args(fixtures_dir, out, *extra))
     assert result.exit_code == 3
     assert not out.exists()
+
+
+def _igv_inputs(tmp_path: Path) -> list[str]:
+    bam = tmp_path / "P-1-T-01.bam"
+    bam.write_text("x")
+    (tmp_path / "P-1-T-01.bam.bai").write_text("x")
+    vcf = tmp_path / "somatic.vcf"
+    vcf.write_text("x")
+    empty = tmp_path / "bins.bedGraph"
+    empty.write_text("")
+    return [
+        "--reference-dir",
+        str(tmp_path),
+        "--tumor-bam",
+        str(bam),
+        "--somatic-vcf",
+        str(vcf),
+        "--tumor-bins",
+        str(empty),
+    ]
+
+
+def test_igv_session_then_relocate(tmp_path: Path) -> None:
+    outdir = tmp_path / "igv" / "sample"
+    result = runner.invoke(app, ["igv-session", "--outdir", str(outdir), *_igv_inputs(tmp_path)])
+    assert result.exit_code == 0, result.output
+    snv = outdir / "igv_session_snps.xml"
+    sv = outdir / "igv_session_sv.xml"
+    assert str(tmp_path / "P-1-T-01.bam") in snv.read_text()
+    assert "bins.bedGraph" not in snv.read_text()  # empty input skipped
+
+    result = runner.invoke(
+        app, ["igv-relocate", str(snv), str(sv), "--replace", f"{tmp_path}=/mnt/moved"]
+    )
+    assert result.exit_code == 0, result.output
+    assert "/mnt/moved/P-1-T-01.bam" in snv.read_text()
+    assert str(tmp_path) not in snv.read_text()
+
+
+def test_igv_session_dry_run_writes_nothing(tmp_path: Path) -> None:
+    outdir = tmp_path / "out"
+    args = ["igv-session", "--outdir", str(outdir), "--dry-run", *_igv_inputs(tmp_path)]
+    result = runner.invoke(app, args)
+    assert result.exit_code == 0, result.output
+    assert not outdir.exists()
+
+
+def test_igv_session_without_inputs_fails(tmp_path: Path) -> None:
+    args = ["igv-session", "--outdir", str(tmp_path / "out"), "--reference-dir", str(tmp_path)]
+    result = runner.invoke(app, args)
+    assert result.exit_code == 3
+
+
+def test_igv_relocate_dry_run_and_bad_replace(tmp_path: Path) -> None:
+    session = tmp_path / "s.xml"
+    original = '<Session><Resources><Resource path="/a/x.bam"/></Resources></Session>'
+    session.write_text(original)
+    result = runner.invoke(app, ["igv-relocate", str(session), "--replace", "/a=/b", "--dry-run"])
+    assert result.exit_code == 0, result.output
+    assert session.read_text() == original
+
+    result = runner.invoke(app, ["igv-relocate", str(session), "--replace", "/a"])
+    assert result.exit_code == 3
