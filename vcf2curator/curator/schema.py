@@ -2,7 +2,8 @@
 
 These column lists ARE the Curator input contract: they are taken verbatim from
 the headers emitted by the legacy ``generateIGVnavInput.py`` script (somatic and
-germline variants). Column order and names are significant and must not change
+germline variants) and ``generateIGVnavInput_SV.py`` (structural variants, minus
+the TOOL column). Column order and names are significant and must not change
 without a corresponding change on the Curator side.
 """
 
@@ -74,6 +75,29 @@ GERMLINE_COLUMNS: tuple[str, ...] = (
     "BRCAEx",
     "OncoKB",
     "CGC_ANN",
+    "CURATE",
+)
+
+# Structural variant table (legacy SV summary header without the TOOL column).
+SV_COLUMNS: tuple[str, ...] = (
+    "CHROM_A",
+    "START_A",
+    "END_A",
+    "CHROM_B",
+    "START_B",
+    "END_B",
+    "IGV_COORD",
+    "SVTYPE",
+    "SV_LENGTH",
+    "SUPPORT_READS",
+    "VAF",
+    "SDID",
+    "SAMPLE",
+    "GENE_A",
+    "GENE_B",
+    "GENE_A-GENE_B-sorted",
+    "CGC_ANN",
+    "CURATOR",
     "CURATE",
 )
 
