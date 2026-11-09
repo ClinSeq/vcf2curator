@@ -2,9 +2,10 @@
 
 These column lists ARE the Curator input contract: they are taken verbatim from
 the headers emitted by the legacy ``generateIGVnavInput.py`` script (somatic and
-germline variants) and ``generateIGVnavInput_SV.py`` (structural variants, minus
-the TOOL column). Column order and names are significant and must not change
-without a corresponding change on the Curator side.
+germline variants), ``generateIGVnavInput_SV.py`` (structural variants, minus
+the TOOL column) and the table written by ``QC_overview.R``. Column order and
+names are significant and must not change without a corresponding change on the
+Curator side.
 """
 
 from __future__ import annotations
@@ -99,6 +100,28 @@ SV_COLUMNS: tuple[str, ...] = (
     "CGC_ANN",
     "CURATOR",
     "CURATE",
+)
+
+# QC overview tables (legacy QC_overview.R table output, panel and WGS).
+QC_PANEL_COLUMNS: tuple[str, ...] = (
+    "SAMP",
+    "MEAN_TARGET_COVERAGE",
+    "FOLD_ENRICHMENT",
+    "dedupped_on_bait_rate",
+    "FOLD_80_BASE_PENALTY",
+    "READ_PAIRS_EXAMINED",
+    "PERCENT_DUPLICATION",
+    "contamination_%",
+    "MEDIAN_INSERT_SIZE",
+    "msing_score",
+)
+
+QC_WGS_COLUMNS: tuple[str, ...] = (
+    "SAMP",
+    "MEAN_COVERAGE",
+    "FOLD_80_BASE_PENALTY",
+    "contamination_%",
+    "MEDIAN_INSERT_SIZE",
 )
 
 

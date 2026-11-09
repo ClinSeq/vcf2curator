@@ -7,6 +7,7 @@ from typing import Annotated
 import typer
 
 from vcf2curator import __version__
+from vcf2curator.commands.qc import qc
 from vcf2curator.commands.snvs import snvs
 from vcf2curator.commands.svs import svs
 from vcf2curator.commands.validate import validate
@@ -20,6 +21,7 @@ app = typer.Typer(
 app.command()(validate)
 app.command()(snvs)
 app.command()(svs)
+app.command()(qc)
 
 
 def version_callback(value: bool) -> None:
