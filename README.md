@@ -108,6 +108,16 @@ vcf2curator igv-session \
 vcf2curator igv-relocate results/P-0001/igv/*.xml \
     --replace /old/server/results=/new/server/results
 
+# Combine one case's QC metrics (tumor + normal, panel) into a QC table
+vcf2curator qc -o P-0001.qc.txt \
+    --tumor-name  P-0001-T-01 \
+    --tumor-hsmetrics  T.picard-hsmetrics.txt --tumor-markdup  T.picard-markdup.metrics.txt \
+    --tumor-insertsize T.picard-insertsize.txt --tumor-contest T.contest.txt \
+    --tumor-msings     T.MSI_Analysis.txt \
+    --normal-name P-0001-N-01 \
+    --normal-hsmetrics  N.picard-hsmetrics.txt --normal-markdup N.picard-markdup.metrics.txt \
+    --normal-insertsize N.picard-insertsize.txt --normal-contest N.contest.txt
+
 # Check a VCF is VEP-annotated with the required CSQ fields, without writing output
 vcf2curator validate --input sample.vep.vcf
 
@@ -195,6 +205,25 @@ if missing). Every input is optional, but at least one is required.
   A prefix matches a whole path or a leading directory; the first match wins.
   Use `--dry-run` to see how many paths would change.
 
+### `qc` — QC metric files → QC overview table
+
+Combines one case's QC files into a tab-separated table: a header, the tumor
+row and, if given, the normal row. Each sample gets its own `--tumor-*` /
+`--normal-*` options. Sample names come only from `--tumor-name` /
+`--normal-name`, never from file names. Normal options are all-or-nothing;
+leave them out for tumor-only cases.
+
+| Design | Metrics option | Also required | Optional | Output columns |
+|---|---|---|---|---|
+| Panel | `--*-hsmetrics` | `--*-markdup`, `--*-insertsize`, `--*-contest` | `--*-msings` | SAMP, MEAN_TARGET_COVERAGE, FOLD_ENRICHMENT, dedupped_on_bait_rate, FOLD_80_BASE_PENALTY, READ_PAIRS_EXAMINED, PERCENT_DUPLICATION, contamination_%, MEDIAN_INSERT_SIZE, msing_score |
+| WGS | `--*-wgsmetrics` | `--*-insertsize`, `--*-contest` | — | SAMP, MEAN_COVERAGE, FOLD_80_BASE_PENALTY, contamination_%, MEDIAN_INSERT_SIZE |
+
+The design follows the metrics option given, and tumor and normal must use the
+same one. Values are copied as written in the input files;
+`dedupped_on_bait_rate` is `ON_BAIT_BASES / PF_BASES_ALIGNED`. Missing or
+uncomputed values (Picard `?`, no mSINGS file) are written as `NA`. Only the
+first data row of each Picard file is used.
+
 ## Development
 
 Run these before committing:
@@ -211,8 +240,8 @@ uv run pytest
 ```
 vcf2curator/
 ├── cli.py               # builds the Typer app, registers commands
-├── commands/            # one module per subcommand (snvs.py, svs.py, igv_session.py, ...)
-├── utils/               # shared helpers (gridss.py, evidence.py)
+├── commands/            # one module per subcommand (snvs.py, svs.py, qc.py, igv_session.py, ...)
+├── utils/               # shared helpers (gridss.py, evidence.py, picard.py)
 ├── curator/             # schema.py + shared, schema-validated writer.py
 ├── resources/igv/       # bundled IGV session templates
 ├── annotations/         # OncoKB / CGC / hotspot / curation loaders, BED intervals
