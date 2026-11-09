@@ -174,3 +174,22 @@ def test_bam_color(name: str, color: str) -> None:
 def test_format_path_relative_to_sibling(tmp_path: Path) -> None:
     file = _touch(tmp_path / "a" / "x.bam")
     assert format_path(file, tmp_path / "b", PathStyle.RELATIVE) == "../a/x.bam"
+
+
+@pytest.fixture
+def staged_bam(tmp_path: Path) -> Path:
+    """A BAM staged as a symlink, as Nextflow does in a work directory."""
+    target = _touch(tmp_path / "upstream" / "t.bam")
+    link = tmp_path / "work" / "bams" / "t.bam"
+    link.parent.mkdir(parents=True)
+    link.symlink_to(target)
+    return link
+
+
+def test_format_path_relative_keeps_symlink(staged_bam: Path, tmp_path: Path) -> None:
+    outdir = tmp_path / "work" / "igv"
+    assert format_path(staged_bam, outdir, PathStyle.RELATIVE) == "../bams/t.bam"
+
+
+def test_format_path_absolute_keeps_symlink(staged_bam: Path, tmp_path: Path) -> None:
+    assert format_path(staged_bam, tmp_path, PathStyle.ABSOLUTE) == str(staged_bam)

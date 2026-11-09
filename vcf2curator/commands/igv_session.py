@@ -15,6 +15,7 @@ Behavioural notes vs. the legacy script (intentional, flagged for review):
 * Genome and reference directory are options instead of fixed ``hg19`` and
   ``/nfs/PROBIO/for_igv``.
 * Missing input files fail; empty input files are skipped with a warning.
+* Paths are written as given (made absolute); symlinks are not followed.
 """
 
 from __future__ import annotations
@@ -261,11 +262,15 @@ def _attr(value: str) -> str:
 
 
 def format_path(path: Path, outdir: Path, style: PathStyle) -> str:
-    """Render an input path as absolute or relative to ``outdir``."""
-    absolute = path.resolve()
+    """Render an input path as absolute or relative to ``outdir``.
+
+    Symlinks are not followed: Nextflow stages inputs as symlinks into work
+    directories that are deleted after publishing.
+    """
+    absolute = os.path.abspath(path)
     if style is PathStyle.RELATIVE:
-        return os.path.relpath(absolute, outdir.resolve())
-    return str(absolute)
+        return os.path.relpath(absolute, os.path.abspath(outdir))
+    return absolute
 
 
 def bam_color(bam_name: str) -> str:
@@ -342,7 +347,7 @@ def render_session(
             alignment_panels="\n    ".join(parts.alignment_panels),
             capture_bed_track=capture_bed_track,
             genome=_attr(genome),
-            reference_dir=_attr(str(reference_dir.resolve())),
+            reference_dir=_attr(os.path.abspath(reference_dir)),
         )
     except (KeyError, IndexError, ValueError) as exc:
         raise InputValidationError(f"Session template has an invalid placeholder: {exc}") from exc
