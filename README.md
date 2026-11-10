@@ -105,6 +105,10 @@ vcf2curator qc -o P-0001.qc.txt \
     --normal-hsmetrics  N.picard-hsmetrics.txt --normal-markdup N.picard-markdup.metrics.txt \
     --normal-insertsize N.picard-insertsize.txt --normal-contest N.contest.txt
 
+# Snapshot the variants of a Curator table in IGV (needs igv.sh on PATH, or --igv)
+vcf2curator igv-snapshots snvs -i sample.somatic.tsv --session igv_session_snps.xml -o snapshots/snvs
+vcf2curator igv-snapshots svs  -i sample.svs.tsv     --session igv_session_sv.xml   -o snapshots/svs
+
 # Check a VCF is VEP-annotated with the required CSQ fields, without writing output
 vcf2curator validate --input sample.vep.vcf
 
@@ -114,7 +118,7 @@ vcf2curator snvs ... --dry-run
 
 Global flags: `--verbose/-v`, `--quiet/-q`. Distinct exit codes are used for
 failure modes (input validation `3`, missing annotation resource `4`, schema
-error `5`).
+error `5`, IGV run failure `6`).
 
 ### `snvs` — SNV/indel VCF → Curator table
 
@@ -179,6 +183,30 @@ same one. Values are copied as written in the input files;
 uncomputed values (Picard `?`, no mSINGS file) are written as `NA`. Only the
 first data row of each Picard file is used.
 
+### `igv-snapshots snvs|svs` — Curator table + IGV session → PNG snapshots
+
+Writes an IGV batch script (`igv_batch.sh` / `igv_batch_sv.sh`) into
+`--outdir` and runs IGV on it. IGV loads `--session` and saves one PNG per
+variant, named `chr{CHROM}_{START}-{END}.png`, into the same directory.
+Columns are read by header name. `chr` is added to chromosomes that lack it.
+A repeated snapshot name is skipped with a warning.
+
+- **`snvs`** (needs CHROM, START, END, REF, ALT): IGV is centred on END. For
+  deletions (first ALT shorter than REF) it is centred at
+  `END + round(len(REF) / 2)`.
+- **`svs`** (needs CHROM_A/B, START_A/B, END_A/B, CURATOR): rows with
+  CURATOR=NO are skipped. Each breakpoint is shown as `END ± 150` bp.
+
+| Flag | Default | Effect |
+|---|---|---|
+| `--preferences` | bundled `igvsnapshot.prefs` | IGV preferences file |
+| `--genome` | `hg19` | IGV genome ID |
+| `--igv` | `igv.sh` | IGV launcher |
+| `--port` | a free port | IGV batch port |
+| `--dry-run` | off | log the script and IGV command; write and run nothing |
+
+A table with no variants writes the script but does not start IGV.
+
 ## Development
 
 Run these before committing:
@@ -195,9 +223,10 @@ uv run pytest
 ```
 vcf2curator/
 ├── cli.py               # builds the Typer app, registers commands
-├── commands/            # one module per subcommand (snvs.py, svs.py, qc.py, validate.py, _shared.py)
+├── commands/            # one module per subcommand (snvs.py, svs.py, qc.py, igv_snapshots.py, validate.py, _shared.py)
 ├── utils/               # shared helpers (gridss.py, evidence.py, picard.py)
 ├── curator/             # schema.py + shared, schema-validated writer.py
+├── resources/igv/       # bundled IGV files (igvsnapshot.prefs)
 ├── annotations/         # OncoKB / CGC / hotspot / curation loaders, BED intervals
 ├── logging_config.py
 └── exceptions.py

@@ -7,6 +7,7 @@ from typing import Annotated, NoReturn
 import typer
 
 from vcf2curator.exceptions import (
+    IgvRunError,
     InputValidationError,
     MissingAnnotationError,
     SchemaError,
@@ -19,6 +20,7 @@ _EXIT_CODES: dict[type[Vcf2CuratorError], int] = {
     InputValidationError: 3,
     MissingAnnotationError: 4,
     SchemaError: 5,
+    IgvRunError: 6,
 }
 
 VerboseOpt = Annotated[bool, typer.Option("--verbose", "-v", help="Enable debug logging.")]
