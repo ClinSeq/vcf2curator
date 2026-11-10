@@ -7,6 +7,7 @@ from typing import Annotated
 import typer
 
 from vcf2curator import __version__
+from vcf2curator.commands.profile import profile
 from vcf2curator.commands.qc import qc
 from vcf2curator.commands.snvs import snvs
 from vcf2curator.commands.svs import svs
@@ -22,6 +23,7 @@ app.command()(validate)
 app.command()(snvs)
 app.command()(svs)
 app.command()(qc)
+app.command()(profile)
 
 
 def version_callback(value: bool) -> None:
