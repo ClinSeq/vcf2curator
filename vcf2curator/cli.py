@@ -7,6 +7,7 @@ from typing import Annotated
 import typer
 
 from vcf2curator import __version__
+from vcf2curator.commands.igv_snapshots import igv_snapshots_app
 from vcf2curator.commands.qc import qc
 from vcf2curator.commands.snvs import snvs
 from vcf2curator.commands.svs import svs
@@ -22,6 +23,7 @@ app.command()(validate)
 app.command()(snvs)
 app.command()(svs)
 app.command()(qc)
+app.add_typer(igv_snapshots_app, name="igv-snapshots")
 
 
 def version_callback(value: bool) -> None:
