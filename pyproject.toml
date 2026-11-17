@@ -10,6 +10,7 @@ requires-python = ">=3.11"
 dependencies = [
     "pandas>=3.0.5",
     "pysam>=0.24.0",
+    "pyyaml>=6.0.3",
     "typer>=0.27.0",
 ]
 
@@ -31,6 +32,7 @@ dev = [
     "pytest>=9.1.1",
     "pytest-cov>=7.1.0",
     "ruff>=0.16.1",
+    "types-pyyaml>=6.0.12.20261103",
 ]
 
 [tool.ruff]

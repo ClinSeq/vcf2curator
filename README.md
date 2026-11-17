@@ -122,6 +122,13 @@ vcf2curator qc -o P-0001.qc.txt \
 vcf2curator igv-snapshots snvs -i sample.somatic.tsv --session igv_session_snps.xml -o snapshots/snvs
 vcf2curator igv-snapshots svs  -i sample.svs.tsv     --session igv_session_sv.xml   -o snapshots/svs
 
+# Collect one case's outputs into a Curator profile (YAML)
+vcf2curator profile --case-id P-0001 --tumor-name P-0001-T-01 --normal-name P-0001-N-01 \
+    --snvs-somatic P-0001.somatic.tsv --qc P-0001.qc.tsv \
+    --svs-somatic P-0001.svs.somatic.tsv --multiqc multiqc_report.html \
+    --igv-snapshots-snvs snapshots/snvs --frankenplot-html P-0001.frankenplot.html \
+    -o P-0001.profile.yaml
+
 # Check a VCF is VEP-annotated with the required CSQ fields, without writing output
 vcf2curator validate --input sample.vep.vcf
 
@@ -252,6 +259,42 @@ A repeated snapshot name is skipped with a warning.
 
 A table with no variants writes the script but does not start IGV.
 
+### `profile` — case outputs → Curator YAML profile
+
+Writes one YAML file listing a case's metadata and the paths of its outputs.
+This is the file the Curator app reads. Files are referenced, not embedded.
+Sections and keys with no input are left out.
+
+```yaml
+schema_version: 1
+case_id: P-0001
+project: PROBIO              # --project (optional)
+cancer_type: prostate        # --cancer-type (optional)
+samples: {tumor: P-0001-T-01, normal: P-0001-N-01}
+variants:
+  snvs: {somatic: ..., germline: ...}                 # --snvs-somatic, --snvs-germline
+  svs: {somatic: ..., germline: ..., evidence_bam: ...}
+qc: {table: ..., multiqc: ...}                        # --qc, --multiqc
+igv:
+  sessions: {snvs: ..., svs: ...}                     # --igv-session-snvs/-svs
+  snapshots: {snvs: ..., svs: ...}                    # --igv-snapshots-snvs/-svs (directories)
+cnv: {frankenplot_html: ..., frankenplot_images: [...]}  # --frankenplot-image is repeatable
+```
+
+Required: `--case-id`, `--tumor-name`, `--snvs-somatic`, `--qc`, `--output`.
+Paths are absolute by default. `--path-style relative` writes them relative
+to the profile's directory. Symlinks are never followed.
+
+Validation (exit `3` on failure):
+- Every file must exist and must not be empty.
+- The SNV, SV and QC tables must have the exact Curator header for their slot
+  (e.g. a germline table given as `--snvs-somatic` fails). The QC table may
+  be panel or WGS.
+- The QC table's SAMP column must contain `--tumor-name` and, if given,
+  `--normal-name`.
+- A snapshot directory without PNGs, or an evidence BAM without a `.bai`, only
+  logs a warning.
+
 ## Development
 
 Run these before committing:
@@ -268,7 +311,7 @@ uv run pytest
 ```
 vcf2curator/
 ├── cli.py               # builds the Typer app, registers commands
-├── commands/            # one module per subcommand (snvs.py, svs.py, qc.py, igv_session.py, igv_relocate.py, igv_snapshots.py, validate.py, _shared.py)
+├── commands/            # one module per subcommand (snvs.py, svs.py, qc.py, profile.py, igv_session.py, igv_relocate.py, igv_snapshots.py, validate.py, _shared.py)
 ├── utils/               # shared helpers (gridss.py, evidence.py, picard.py)
 ├── curator/             # schema.py + shared, schema-validated writer.py
 ├── resources/igv/       # bundled IGV files (session templates, igvsnapshot.prefs)
