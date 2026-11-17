@@ -7,6 +7,9 @@ from typing import Annotated
 import typer
 
 from vcf2curator import __version__
+from vcf2curator.commands.igv_relocate import igv_relocate
+from vcf2curator.commands.igv_session import igv_session
+from vcf2curator.commands.igv_snapshots import igv_snapshots_app
 from vcf2curator.commands.profile import profile
 from vcf2curator.commands.qc import qc
 from vcf2curator.commands.snvs import snvs
@@ -22,7 +25,10 @@ app = typer.Typer(
 app.command()(validate)
 app.command()(snvs)
 app.command()(svs)
+app.command(name="igv-session")(igv_session)
+app.command(name="igv-relocate")(igv_relocate)
 app.command()(qc)
+app.add_typer(igv_snapshots_app, name="igv-snapshots")
 app.command()(profile)
 
 
