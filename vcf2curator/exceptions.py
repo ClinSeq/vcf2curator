@@ -21,3 +21,7 @@ class MissingAnnotationError(Vcf2CuratorError):
 
 class SchemaError(Vcf2CuratorError):
     """Raised when an output row does not match the Curator schema."""
+
+
+class IgvRunError(Vcf2CuratorError):
+    """Raised when IGV cannot be started or exits with an error."""
